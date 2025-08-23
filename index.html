@@ -1,68 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Big or Small Betting Demo</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #222;
-      color: #eee;
-      text-align: center;
-      padding: 2rem;
-    }
-    h1 {
-      margin-bottom: 0.5rem;
-    }
-    button {
-      font-size: 1.2rem;
-      padding: 1rem 2rem;
-      margin: 1rem;
-      cursor: pointer;
-      border: none;
-      border-radius: 5px;
-      background: #444;
-      color: #eee;
-      transition: background 0.3s;
-    }
-    button:hover {
-      background: #666;
-    }
-    #result {
-      margin-top: 2rem;
-      font-size: 1.5rem;
-      min-height: 2rem;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lottery Betting Site</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Big or Small Betting Demo</h1>
-  <p>Guess if the number (1-10) is Big (>5) or Small (≤5)</p>
+    <div class="container">
+        <h1>Welcome to Lottery 66</h1>
+        
+        <!-- Register Form -->
+        <div id="register-form">
+            <h2>Register</h2>
+            <form id="register">
+                <input type="text" id="register-username" placeholder="Username" required>
+                <input type="password" id="register-password" placeholder="Password" required>
+                <button type="submit">Register</button>
+            </form>
+        </div>
 
-  <button id="bigBtn">Big</button>
-  <button id="smallBtn">Small</button>
+        <!-- Login Form -->
+        <div id="login-form">
+            <h2>Login</h2>
+            <form id="login">
+                <input type="text" id="login-username" placeholder="Username" required>
+                <input type="password" id="login-password" placeholder="Password" required>
+                <button type="submit">Login</button>
+            </form>
+        </div>
 
-  <div id="result"></div>
+        <!-- Betting Section -->
+        <div id="betting-section" style="display:none;">
+            <h2>Place a Bet</h2>
+            <input type="number" id="bet-amount" placeholder="Bet Amount" required>
+            <input type="number" id="bet-number" placeholder="Pick a Number (1-100)" required>
+            <button id="place-bet">Place Bet</button>
+        </div>
 
-  <script>
-    const bigBtn = document.getElementById('bigBtn');
-    const smallBtn = document.getElementById('smallBtn');
-    const resultDiv = document.getElementById('result');
+        <p id="message"></p>
+    </div>
 
-    function playGame(userChoice) {
-      const randomNumber = Math.floor(Math.random() * 10) + 1;
-      let outcome = '';
-      if ((randomNumber > 5 && userChoice === 'Big') || (randomNumber <= 5 && userChoice === 'Small')) {
-        outcome = '🎉 You WIN!';
-      } else {
-        outcome = '😞 You LOSE!';
-      }
-      resultDiv.textContent = `Number was: ${randomNumber}. ${outcome}`;
-    }
-
-    bigBtn.addEventListener('click', () => playGame('Big'));
-    smallBtn.addEventListener('click', () => playGame('Small'));
-  </script>
+    <script src="script.js"></script>
 </body>
 </html>
