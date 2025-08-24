@@ -68,6 +68,14 @@
       border-color: #ff6a6a;
     }
 
+    .remember {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+      font-size: 14px;
+      color: #555;
+    }
+
     .btn {
       width: 100%;
       padding: 12px;
@@ -80,12 +88,7 @@
       margin-bottom: 10px;
     }
 
-    .btn:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
-
-    .btn:hover:not(:disabled) {
+    .btn:hover {
       opacity: 0.9;
     }
 
@@ -162,12 +165,6 @@
       border-radius: 6px;
       cursor: pointer;
     }
-
-    .status {
-      margin-top: 10px;
-      font-weight: bold;
-      font-size: 14px;
-    }
   </style>
 </head>
 <body>
@@ -185,20 +182,23 @@
 
     <!-- Forms -->
     <div class="form">
-      <!-- Phone Login with OTP -->
+      <!-- Phone Login -->
       <div class="form-section active" id="phoneForm">
-        <input type="text" id="phone" placeholder="+91 Phone number">
+        <input type="text" id="phoneNumber" placeholder="+91 Phone number">
         <div id="recaptcha-container"></div>
-        <button class="btn" id="sendBtn" onclick="sendOTP()">Send OTP</button>
+        <button class="btn" onclick="sendOTP()">Send OTP</button>
         <input type="text" id="otp" placeholder="Enter OTP">
         <button class="btn" onclick="verifyOTP()">Verify OTP</button>
-        <p class="status" id="status"></p>
       </div>
 
       <!-- Email Login -->
       <div class="form-section" id="emailForm">
         <input type="email" placeholder="Email address">
         <input type="password" placeholder="Password">
+        <div class="remember">
+          <input type="checkbox" checked>
+          <label>Remember password</label>
+        </div>
         <button class="btn">Log in</button>
         <button class="register">Register</button>
       </div>
@@ -232,72 +232,98 @@
     </div>
   </div>
 
-  <!-- Firebase OTP Script -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } 
-      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth.js"></script>
 
-    // ✅ Replace with your Firebase Config
+  <script>
+    // ✅ Replace this with your Firebase config
     const firebaseConfig = {
-      apiKey: "AIzaSyBsIm7iWwrpWwfUx24_if5JqqAF_LwEvFo",
-      authDomain: "winzo-4802d.firebaseapp.com",
-      projectId: "winzo-4802d",
-      storageBucket: "winzo-4802d.firebasestorage.app",
-      messagingSenderId: "396533650090",
-      appId: "1:396533650090:web:64ff32e4346e0ebe55f6d3",
-      measurementId: "G-JL9XMVVQP0"
-    };
+  apiKey: "AIzaSyBsIm7iWwrpWwfUx24_if5JqqAF_LwEvFo",
+  authDomain: "winzo-4802d.firebaseapp.com",
+  projectId: "winzo-4802d",
+  storageBucket: "winzo-4802d.firebasestorage.app",
+  messagingSenderId: "396533650090",
+  appId: "1:396533650090:web:64ff32e4346e0ebe55f6d3",
+  measurementId: "G-JL9XMVVQP0"
+};
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
 
-    // Setup invisible Recaptcha
-    window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", { size: "invisible" });
+    let confirmationResult;
 
-    let countdown;
-    const sendBtn = document.getElementById("sendBtn");
-    const status = document.getElementById("status");
-
-    function startCountdown() {
-      let timeLeft = 60;
-      sendBtn.disabled = true;
-      sendBtn.innerText = `Resend OTP (60s)`;
-
-      countdown = setInterval(() => {
-        timeLeft--;
-        sendBtn.innerText = `Resend OTP (${timeLeft}s)`;
-        if (timeLeft <= 0) {
-          clearInterval(countdown);
-          sendBtn.disabled = false;
-          sendBtn.innerText = "Resend OTP";
-        }
-      }, 1000);
-    }
-
-    // Send OTP
-    window.sendOTP = function () {
-      const phoneNumber = document.getElementById("phone").value;
-      const appVerifier = window.recaptchaVerifier;
-
-      signInWithPhoneNumber(auth, phoneNumber, appVerifier)
-        .then((confirmationResult) => {
-          window.confirmationResult = confirmationResult;
-          status.innerHTML = "✅ OTP Sent!";
-          status.style.color = "green";
-          startCountdown();
+    function sendOTP() {
+      const phoneNumber = document.getElementById("phoneNumber").value;
+      const appVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container');
+      auth.signInWithPhoneNumber(phoneNumber, appVerifier)
+        .then((result) => {
+          confirmationResult = result;
+          alert("OTP sent!");
         })
         .catch((error) => {
-          status.innerHTML = "❌ Error: " + error.message;
-          status.style.color = "red";
+          console.error(error);
+          alert("Error: " + error.message);
         });
-    };
+    }
 
-    // Verify OTP
-    window.verifyOTP = function () {
+    function verifyOTP() {
       const otp = document.getElementById("otp").value;
-
-      window.confirmationResult
-        .confirm(otp)
+      confirmationResult.confirm(otp)
         .then((result) => {
-          status.innerHTML = "🎉 OTP Verified! Logged in.";
+          alert("OTP Verified ✅");
+          console.log(result.user);
+        })
+        .catch((error) => {
+          alert("Invalid OTP ❌");
+        });
+    }
+
+    // Tabs
+    const phoneTab = document.getElementById("phoneTab");
+    const emailTab = document.getElementById("emailTab");
+    const phoneForm = document.getElementById("phoneForm");
+    const emailForm = document.getElementById("emailForm");
+
+    phoneTab.addEventListener("click", () => {
+      phoneTab.classList.add("active");
+      emailTab.classList.remove("active");
+      phoneForm.classList.add("active");
+      emailForm.classList.remove("active");
+    });
+
+    emailTab.addEventListener("click", () => {
+      emailTab.classList.add("active");
+      phoneTab.classList.remove("active");
+      emailForm.classList.add("active");
+      phoneForm.classList.remove("active");
+    });
+
+    // Modals
+    const forgotLink = document.getElementById("forgotLink");
+    const supportLink = document.getElementById("supportLink");
+    const forgotModal = document.getElementById("forgotModal");
+    const supportModal = document.getElementById("supportModal");
+
+    forgotLink.addEventListener("click", () => {
+      forgotModal.style.display = "flex";
+    });
+
+    supportLink.addEventListener("click", () => {
+      supportModal.style.display = "flex";
+    });
+
+    function closeModal(id) {
+      document.getElementById(id).style.display = "none";
+    }
+
+    // Close modal on background click
+    window.addEventListener("click", (e) => {
+      if (e.target.classList.contains("modal")) {
+        e.target.style.display = "none";
+      }
+    });
+  </script>
+</body>
+</html>
